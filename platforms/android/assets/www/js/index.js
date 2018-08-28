@@ -89,7 +89,6 @@ function googleMapPos(lat,lang,iconurl){
             animation: google.maps.Animation.DROP,
             icon: icon
         });
-        map.setCenter(marker.getPosition());
 }
 
 function goto(lat,long){
