@@ -16,7 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- function getPosition() {
+var myLatlng ;
+var mapOptions ;
+var map ;
+var markersoutlet = [];
+
+function getMyPosition(func){
    var options = {
       enableHighAccuracy: true,
       maximumAge: 3600000
@@ -29,7 +34,7 @@
      $("#loading").html("");
      var lat = position.coords.latitude;         
      var lang = position.coords.longitude; 
-     app.viewOutlet(lat,lang);
+     func(lat,lang);
    };
 
    function onError(error) {
@@ -37,33 +42,7 @@
       $("#loading").html("");
       var lat = -8.617200227 ;
       var lang = 115.1690177 ;
-      app.viewOutlet(lat,lang);
-   }
-
-}
-
-function getMyPosition(){
-  var options = {
-      enableHighAccuracy: true,
-      maximumAge: 3600000
-   }
-
-   $("#loading").html("<img src='img/loading.gif' />");
-   var watchID = navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
-
-   function onSuccess(position) {
-     $("#loading").html("");
-     var lat = position.coords.latitude;         
-     var lang = position.coords.longitude; 
-     goto(lat,lang);
-   };
-
-   function onError(error) {
-      //alert('code: '    + error.code    + '\n' +'message: ' + error.message + '\n');
-      $("#loading").html("");
-      var lat = -8.617200227 ;
-      var lang = 115.1690177 ;
-      goto(lat,lang);
+      func(lat,lang);
    }
 }
 
@@ -89,11 +68,27 @@ function googleMapPos(lat,lang,iconurl){
             animation: google.maps.Animation.DROP,
             icon: icon
         });
+
+        if(iconurl == 'blue-dot.png'){
+          markersoutlet.push(marker);
+        }
 }
 
-function goto(lat,long){
-  googleMapPos(lat,long,"orange-dot.png");
-  map.setZoom(17);      // This will trigger a zoom_changed on the map
+function makeMyPosition(){
+   getMyPosition(function(lat,lang){
+    googleMapPos(lat,lang,"red-dot.png");
+   });
+}
+
+function goto(){
+  getMyPosition(function(lat,lang){
+    setto(lat,lang);
+   });
+}
+
+
+function setto(lat,long){
+  map.setZoom(13);      // This will trigger a zoom_changed on the map
   map.setCenter(new google.maps.LatLng(lat, long));
 }
 
@@ -140,15 +135,20 @@ function viewOutlet(lat,lang){
         });
 }
 
-var myLatlng ;
-var mapOptions ;
-var map ;
+function clearOutlet(){
+  //alert(markersoutlet);
+  for (var i = 0; i < markersoutlet.length; i++) {
+    markersoutlet[i].setMap(null);
+  }
+}
+
 var app = {
     // Application Constructor
     initialize: function() {
         this.bindEvents();
         googleMap(-8.673826,115.222807);
-        getMyPosition();
+        //getMyPosition();
+        makeMyPosition();
     },
     // Bind Event Listeners
     //
@@ -166,7 +166,7 @@ var app = {
         //document.getElementById("watchPosition").addEventListener("click", watchPosition);
         
         //fetch data satellite revenue
-        $.ajax({
+        /*$.ajax({
              type: "POST",
              url:"http://10.67.98.98/mapsbligusto/branch/bali.php",
              data: {},
@@ -185,7 +185,7 @@ var app = {
 
                  $("#loading").html("");
              }
-        });
+        });*/
 
 
     },
@@ -211,5 +211,15 @@ var app = {
 
 
 $("#search").click(function(){
-  getPosition();
+  getMyPosition(function(lat,lang){
+    app.viewOutlet(lat,lang);
+  });
 });
+
+$("#clear").click(function(){
+  clearOutlet();
+})
+
+$("#setto").click(function(){
+  goto();
+})
